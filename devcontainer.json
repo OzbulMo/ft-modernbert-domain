@@ -1,0 +1,51 @@
+{
+	"name": "Fine-tuning Embedding Models (NVIDIA GPU)",
+	// Switched to the NVIDIA NGC PyTorch container.
+	// These are performance-tuned for NVIDIA GPUs and include the latest libraries.
+	"image": "nvcr.io/nvidia/pytorch:25.05-py3",
+
+	// runArgs remain the same. Access to GPUs and shared memory are still needed.
+	"runArgs": [
+		"--gpus", "all",
+		"--shm-size=1g"
+	],
+
+	// The postCreateCommand is almost identical. The NVIDIA container also uses apt for
+	// package management and has Python/pip available. We still need to install the
+	// notebook-specific dependencies.
+	"postCreateCommand": "bash -c 'apt-get update && apt-get install -y git && pip install --upgrade pip && pip install --no-cache-dir --upgrade sentence-transformers datasets tensorboard huggingface_hub ipykernel \"transformers @ git+https://github.com/huggingface/transformers\"'",
+
+	"customizations": {
+		"vscode": {
+			"settings": {
+				// The NVIDIA PyTorch container also uses a conda environment by default,
+				// so this path is likely still correct. If not, you can find the
+				// right path by running `which python` in the dev container terminal.
+				"python.defaultInterpreterPath": "/opt/conda/bin/python",
+				"python.analysis.typeCheckingMode": "basic",
+				"editor.formatOnSave": true,
+				"editor.defaultFormatter": "ms-python.black-formatter",
+				"[python]": {
+					"editor.codeActionsOnSave": {
+						"source.organizeImports": "explicit"
+					}
+				},
+				"files.trimTrailingWhitespace": true
+			},
+			"extensions": [
+				"ms-python.python",
+				"ms-toolsai.jupyter",
+				"ms-python.black-formatter",
+				"ms-python.isort",
+				"eamodio.gitlens",
+				"njpwerner.autodocstring"
+			]
+		}
+	},
+
+	"forwardPorts": [6006],
+
+	"remoteEnv": {
+		"HF_TOKEN": "${localEnv:HF_TOKEN}"
+	}
+}
